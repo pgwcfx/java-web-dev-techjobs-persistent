@@ -18,6 +18,15 @@ public class EmployerController {
     @Autowired
     private EmployerRepository employerRepository;
 
+    @RequestMapping("")
+    public String index(Model model) {
+
+        model.addAttribute("title", "My Jobs");
+        model.addAttribute("employers",employerRepository.findAll());
+
+        return "employers/index";
+    }
+
     @GetMapping("add")
     public String displayAddEmployerForm(Model model) {
         model.addAttribute(new Employer());
@@ -27,10 +36,8 @@ public class EmployerController {
     @PostMapping("add")
     public String processAddEmployerForm(@ModelAttribute @Valid Employer newEmployer,
                                     Errors errors, Model model) {
-
+        model.addAttribute(new Employer());
         if (errors.hasErrors()) {
-            model.addAttribute("title","Add Employer");
-            model.addAttribute(new Employer());
             return "employers/add";
         }
         employerRepository.save(newEmployer);
@@ -38,21 +45,14 @@ public class EmployerController {
     }
 
     @GetMapping("view/{employerId}")
-    public String displayViewEmployer(Model model, @PathVariable Integer employerId) {
-        if (employerId==null) {
-            model.addAttribute("title","All Jobs");
-            model.addAttribute("employer", employerRepository.findAll());
+    public String displayViewEmployer(Model model, @PathVariable int employerId) {
+        Optional optEmployer = employerRepository.findById(employerId);
+        if (optEmployer.isPresent()) {
+            Employer employer = (Employer) optEmployer.get();
+            model.addAttribute("employer", employer);
+            return "employers/view";
         } else {
-            Optional<Employer> result=employerRepository.findById(employerId);
-            if (result.isEmpty()){
-                model.addAttribute("title","Invalid Employer id: " + employerId);
-            } else {
-                Employer employer = result.get();
-                model.addAttribute("title","Jobs with Employer: " + employer.getName());
-                model.addAttribute("employer",employer.getName());
-            }
             return "redirect:../";
         }
-        return "employers/view";
     }
 }
