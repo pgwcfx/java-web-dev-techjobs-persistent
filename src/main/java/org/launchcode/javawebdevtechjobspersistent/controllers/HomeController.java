@@ -67,20 +67,14 @@ public class HomeController {
     @GetMapping("view/{jobId}")
     public String displayViewJob(Model model, @PathVariable(required = false) Integer jobId) {
 
-        if (jobId == null){
-            model.addAttribute("title","All Jobs");
-            model.addAttribute("jobs",jobRepository.findAll());
+        Optional optJob = jobRepository.findById(jobId);
+        if (optJob.isPresent()) {
+            Job job = (Job) optJob.get();
+            model.addAttribute("job", job);
+            return "view";
         } else {
-            Optional<Job> result = jobRepository.findById(jobId);
-            if (result.isEmpty()){
-                model.addAttribute("title","Invalid Job ID: " + jobId);
-            } else {
-                Job job = result.get();
-                model.addAttribute("title","Jobs  with title: " + job.getName());
-                model.addAttribute("jobs",job);
-            }
+            return "redirect:../";
         }
-        return "view";
     }
 
 
